@@ -913,6 +913,19 @@ class CognitoUser {
     return _signInUserSession;
   }
 
+  // Begins the setup process for MFA_SETUP Challenge.
+  // Provides a Secret to the User to initialize authenticator app
+  Future<String> associateSoftwareToken() async {
+    final paramsReq = {'Session': _session};
+
+    final dataAuthenticate = await client!.request('AssociateSoftwareToken',
+        await _analyticsMetadataParamsDecorator.call(paramsReq));
+
+    print(dataAuthenticate['SecretCode']);
+
+    return dataAuthenticate['SecretCode'];
+  }
+
   /// This is used by an authenticated user to change the current password
   Future<bool> changePassword(
       String oldUserPassword, String newUserPassword) async {
