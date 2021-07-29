@@ -921,6 +921,8 @@ class CognitoUser {
     final dataAuthenticate = await client!.request('AssociateSoftwareToken',
         await _analyticsMetadataParamsDecorator.call(paramsReq));
 
+    _session = dataAuthenticate['Session'];
+
     print(dataAuthenticate['SecretCode']);
     return dataAuthenticate['SecretCode'];
   }
