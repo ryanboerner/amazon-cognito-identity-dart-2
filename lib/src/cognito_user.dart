@@ -922,8 +922,25 @@ class CognitoUser {
         await _analyticsMetadataParamsDecorator.call(paramsReq));
 
     print(dataAuthenticate['SecretCode']);
-
     return dataAuthenticate['SecretCode'];
+  }
+
+  // Verifies Software Token to complete MFA_SETUP Challenge.
+  Future<bool> verifySoftwareToken(String code) async {
+    final paramsReq = {
+      'Session': _session,
+      'FriendlyDeviceName': deviceName,
+      'UserCode': code
+    };
+
+    final dataAuthenticate = await client!.request('VerifySoftwareToken',
+        await _analyticsMetadataParamsDecorator.call(paramsReq));
+
+    if (dataAuthenticate['Status'] == 'SUCCESS') {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /// This is used by an authenticated user to change the current password
