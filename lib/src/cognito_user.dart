@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:amazon_cognito_identity_dart_2/src/params_decorators.dart';
+import 'package:amazon_cognito_identity_dart_2/src/worker_utils.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 

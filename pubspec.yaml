@@ -9,6 +9,8 @@ dependencies:
   convert: ^3.0.0
   crypto: ^3.0.0
   http: ^0.13.0
+  flutter:
+    sdk: flutter
 
 dev_dependencies:
   pedantic: ^1.10.0
