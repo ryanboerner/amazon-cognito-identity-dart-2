@@ -540,7 +540,7 @@ class CognitoUser {
     AuthenticationDetails authDetails,
   ) async {
     final authenticationHelper = AuthenticationHelper(
-      pool.getUserPoolId().split('_')[1],
+      pool.getUserPoolId()?.split('_')[1],
     );
     final dateHelper = DateHelper();
     BigInt serverBValue;
@@ -554,7 +554,15 @@ class CognitoUser {
     }
     authParameters['USERNAME'] = username;
 
-    final srpA = authenticationHelper.getLargeAValue()!;
+    // Grab the worker from the pool by its name.
+    final ManagedWorker? loginWorker = WorkerPool.instance.get('LOGIN_WORKER');
+
+    // This is an interesting bit.
+    dynamic value = await loginWorker?.post('getLargeAValue');
+    final BigInt srpA = BigInt.parse(value as String);
+    // This is the state update.
+    authenticationHelper.largeAValue = srpA;
+
     authParameters['SRP_A'] = srpA.toRadixString(16);
 
     if (authenticationFlowType == 'CUSTOM_AUTH') {
@@ -592,33 +600,38 @@ class CognitoUser {
 
     final challengeParameters = data['ChallengeParameters'];
 
-    String srp_username = challengeParameters['USER_ID_FOR_SRP'];
+    username = challengeParameters['USER_ID_FOR_SRP'];
     serverBValue = BigInt.parse(challengeParameters['SRP_B'], radix: 16);
     saltString =
         authenticationHelper.toUnsignedHex(challengeParameters['SALT']);
     salt = BigInt.parse(saltString, radix: 16);
 
-    var hkdf = authenticationHelper.getPasswordAuthenticationKey(
-      srp_username,
-      authDetails.getPassword(),
-      serverBValue,
-      salt,
-    );
+    // This in another interesting bit. Post the necessary data to the worker (in serializable format!)
+    // and wait for the return to update current state.
+    dynamic hkdfValue =
+        await loginWorker?.post('getPasswordAuthenticationKey', {
+      'username': username,
+      'password': authDetails.getPassword(),
+      'serverBValue': serverBValue.toString(),
+      'salt': salt.toString(),
+    });
+    // This is the state update.
+    final List<int> hkdf = (hkdfValue as List<dynamic>).cast<int>();
 
     final dateNow = dateHelper.getNowString();
 
     final signature = Hmac(sha256, hkdf);
     final signatureData = <int>[];
     signatureData
-      ..addAll(utf8.encode(pool.getUserPoolId().split('_')[1]))
-      ..addAll(utf8.encode(srp_username))
+      ..addAll(utf8.encode(pool.getUserPoolId()?.split('_')[1] ?? ''))
+      ..addAll(utf8.encode(username ?? ''))
       ..addAll(base64.decode(challengeParameters['SECRET_BLOCK']))
       ..addAll(utf8.encode(dateNow));
     final dig = signature.convert(signatureData);
     final signatureString = base64.encode(dig.bytes);
 
     final challengeResponses = {
-      'USERNAME': srp_username,
+      'USERNAME': username,
       'PASSWORD_CLAIM_SECRET_BLOCK': challengeParameters['SECRET_BLOCK'],
       'TIMESTAMP': dateNow,
       'PASSWORD_CLAIM_SIGNATURE': signatureString,
@@ -639,7 +652,7 @@ class CognitoUser {
             await client!.request('RespondToAuthChallenge', challenge);
       } on CognitoClientException catch (e) {
         if (e.code == 'ResourceNotFoundException' &&
-            e.message!.toLowerCase().contains('device')) {
+            (e.message?.toLowerCase().contains('device') ?? false)) {
           challengeResponses['DEVICE_KEY'] = null;
           _deviceKey = null;
           _randomPassword = null;
