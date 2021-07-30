@@ -1,6 +1,7 @@
 export 'src/attribute_arg.dart';
 export 'src/authentication_details.dart';
 export 'src/authentication_helper.dart';
+export 'src/worker_utils.dart';
 export 'src/cognito_client_exceptions.dart';
 export 'src/cognito_credentials.dart';
 export 'src/cognito_id_token.dart';
