@@ -32,7 +32,7 @@ class AuthenticationHelper {
   late BigInt k;
   late List<int> _infoBits;
   BigInt? _smallAValue;
-  BigInt? _largeAValue;
+  BigInt? largeAValue;
   late String _uHexHash;
   BigInt? _uValue;
   String? _randomPassword;
@@ -55,11 +55,11 @@ class AuthenticationHelper {
   }
 
   BigInt? getLargeAValue() {
-    if (_largeAValue != null) {
-      return _largeAValue;
+    if (largeAValue != null) {
+      return largeAValue;
     }
-    _largeAValue = calculateA(_smallAValue!);
-    return _largeAValue;
+    largeAValue = calculateA(_smallAValue!);
+    return largeAValue;
   }
 
   String? getRandomPassword() {
