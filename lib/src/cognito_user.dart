@@ -937,25 +937,98 @@ class CognitoUser {
 
     _session = dataAuthenticate['Session'];
 
-    print(dataAuthenticate['SecretCode']);
     return dataAuthenticate['SecretCode'];
   }
 
   // Verifies Software Token to complete MFA_SETUP Challenge.
-  Future<bool> verifySoftwareToken(String code) async {
+  Future<CognitoUserSession?> verifySoftwareToken(String code) async {
     final paramsReq = {
       'Session': _session,
       'FriendlyDeviceName': deviceName,
       'UserCode': code
     };
 
-    final dataAuthenticate = await client!.request('VerifySoftwareToken',
+    var verification = await client!.request('VerifySoftwareToken',
         await _analyticsMetadataParamsDecorator.call(paramsReq));
 
-    if (dataAuthenticate['Status'] == 'SUCCESS') {
-      return true;
+    if (verification['Status'] == 'SUCCESS') {
+      _session = verification['Session'];
+
+      final challengeResponses = {'USERNAME': username};
+
+      await getCachedDeviceKeyAndPassword();
+      if (_deviceKey != null) {
+        challengeResponses['DEVICE_KEY'] = _deviceKey;
+      }
+
+      final paramsReq = {
+        'ChallengeName': 'MFA_SETUP',
+        'ChallengeResponses': challengeResponses,
+        'ClientId': pool.getClientId(),
+        'Session': _session,
+      };
+      if (getUserContextData() != null) {
+        paramsReq['UserContextData'] = getUserContextData();
+      }
+
+      final dataAuthenticate = await client!.request('RespondToAuthChallenge',
+          await _analyticsMetadataParamsDecorator.call(paramsReq));
+
+      final String? challengeName = dataAuthenticate['ChallengeName'];
+
+      if (challengeName == 'DEVICE_SRP_AUTH') {
+        return getDeviceResponse();
+      }
+
+      _signInUserSession =
+          getCognitoUserSession(dataAuthenticate['AuthenticationResult']);
+      await cacheTokens();
+
+      if (dataAuthenticate['AuthenticationResult']['NewDeviceMetadata'] ==
+          null) {
+        return _signInUserSession;
+      }
+
+      final authenticationHelper =
+          AuthenticationHelper(pool.getUserPoolId().split('_')[1]);
+      authenticationHelper.generateHashDevice(
+          dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+              ['DeviceGroupKey'],
+          dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+              ['DeviceKey']);
+
+      final deviceSecretVerifierConfig = {
+        'Salt':
+            base64.encode(hex.decode(authenticationHelper.getSaltDevices()!)),
+        'PasswordVerifier': base64
+            .encode(hex.decode(authenticationHelper.getVerifierDevices()!)),
+      };
+
+      verifierDevices = deviceSecretVerifierConfig['PasswordVerifier'];
+      _deviceGroupKey = dataAuthenticate['AuthenticationResult']
+          ['NewDeviceMetadata']['DeviceGroupKey'];
+      _randomPassword = authenticationHelper.getRandomPassword();
+
+      final confirmDeviceParamsReq = {
+        'DeviceKey': dataAuthenticate['AuthenticationResult']
+            ['NewDeviceMetadata']['DeviceKey'],
+        'AccessToken': _signInUserSession!.getAccessToken().getJwtToken(),
+        'DeviceSecretVerifierConfig': deviceSecretVerifierConfig,
+        'DeviceName': deviceName,
+      };
+      final dataConfirm =
+          await client!.request('ConfirmDevice', confirmDeviceParamsReq);
+      _deviceKey = dataAuthenticate['AuthenticationResult']['NewDeviceMetadata']
+          ['DeviceKey'];
+      await cacheDeviceKeyAndPassword();
+      if (dataConfirm['UserConfirmationNecessary'] == true) {
+        throw CognitoUserConfirmationNecessaryException(
+            signInUserSession: _signInUserSession);
+      }
+
+      return _signInUserSession;
     } else {
-      return false;
+      return null;
     }
   }
 
