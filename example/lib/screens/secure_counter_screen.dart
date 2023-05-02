@@ -39,9 +39,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
 
         // get session credentials
         final credentials = await _userService.getCredentials();
-        if (credentials != null &&
-            credentials.accessKeyId != null &&
-            credentials.secretAccessKey != null) {
+        if (credentials != null && credentials.accessKeyId != null && credentials.secretAccessKey != null) {
           _awsSigV4Client = AwsSigV4Client(
             credentials.accessKeyId!,
             credentials.secretAccessKey!,
@@ -55,8 +53,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
           try {
             _counter = await _counterService.getCounter();
           } catch (e) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(e.toString())));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
           }
         }
       }
@@ -90,7 +87,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
                   children: <Widget>[
                     Text(
                       'Welcome ${_user?.name}!',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.headline4,
                     ),
                     Divider(),
                     Text(
@@ -98,7 +95,7 @@ class _SecureCounterScreenState extends State<SecureCounterScreen> {
                     ),
                     Text(
                       '${_counter.count}',
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.headline4,
                     ),
                     Divider(),
                     Center(

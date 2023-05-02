@@ -2,8 +2,7 @@ import 'dart:convert';
 
 class CognitoJwtToken {
   String? jwtToken;
-  dynamic payload;
-
+  var payload;
   CognitoJwtToken(String? token) {
     jwtToken = token;
     payload = decodePayload();

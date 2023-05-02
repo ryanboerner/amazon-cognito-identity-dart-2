@@ -104,14 +104,12 @@ class CognitoUserPool {
   }
 
   /// Registers the user in the specified user pool and creates a
-  /// user name, password, optional user attributes, optional validation data
-  /// and optional client metadata.
+  /// user name, password, and user attributes.
   Future<CognitoUserPoolData> signUp(
     String username,
     String password, {
     List<AttributeArg>? userAttributes,
     List<AttributeArg>? validationData,
-    Map<String, String>? clientMetadata,
   }) async {
     final params = {
       'ClientId': _clientId,
@@ -119,7 +117,6 @@ class CognitoUserPool {
       'Password': password,
       'UserAttributes': userAttributes,
       'ValidationData': validationData,
-      'ClientMetadata': clientMetadata
     };
 
     if (_clientSecret != null) {

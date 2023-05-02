@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -45,17 +46,17 @@ class Client {
         headers: headersReq,
         body: body,
       );
-    } catch (e) {
-      if (e.toString().contains('SocketException:')) {
-        throw CognitoClientException(
-          'SocketException',
-          code: 'NetworkError',
-        );
-      }
+    } on SocketException catch (e) {
+      throw CognitoClientException(
+        e.message,
+        code: 'NetworkError',
+      );
+    } on Object catch (e) {
+      print(e);
       throw CognitoClientException('Unknown Error', code: 'Unknown error');
     }
 
-    dynamic data;
+    var data;
 
     try {
       data = json.decode(utf8.decode(response.bodyBytes));

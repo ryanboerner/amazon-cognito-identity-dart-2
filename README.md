@@ -194,7 +194,7 @@ try {
 }
 ```
 
-__Use case 9.__ Enabling SMS-MFA for a user on a pool that has an optional MFA setting for authenticated users. The phone number needs to be verified
+__Use case 9.__ Enabling MFA for a user on a pool that has an optional MFA setting for authenticated users.
 
 ```dart
 bool mfaEnabled = false;
@@ -979,40 +979,4 @@ final userPool = CognitoUserPool(
   'xxxxxxxxxxxxxxxxxxxxxxxxxx',
   clientSecret: 'xxxxxxxxxxxxxxxxxxxxxxx'
 );
-```
-
-### Flutter web sign-in performance
-
-To improve performance of `modPow()` used in `authenticateUser()`, use an external JavaScript call to do the modPow calculation using the native BigInt type.
-
-Include the following JavaScript method in your top level index.html page for your flutter web app.
-
-Also, add package:js as a dependency in your app's `pubspec.yaml`
-
-`js: ^0.6.3`
-```js
-<script>
-  function jsBigIntModPow(bStr, eStr, mStr) {
-  let b = BigInt(bStr);
-  let e = BigInt(eStr);
-  let m = BigInt(mStr);
-  let bigIntOne = BigInt(1);
-  let bigIntZero = BigInt(0);
-  if (e < bigIntOne) {
-  return bigIntOne;
-}
-  if (b < bigIntZero || b > m) {
-  b = b % m;
-}
-  var r = bigIntOne;
-  while (e > bigIntZero) {
-  if ((e & bigIntOne) > bigIntZero) {
-  r = (r * b) % m;
-}
-  e = e >> bigIntOne;
-  b = (b * b) % m;
-}
-  return r;
-}
-</script>
 ```
