@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:amazon_cognito_identity_dart_2/src/params_decorators.dart';
-import 'package:amazon_cognito_identity_dart_2/src/worker_utils.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
@@ -557,15 +556,7 @@ class CognitoUser {
     }
     authParameters['USERNAME'] = username;
 
-    // Grab the worker from the pool by its name.
-    final ManagedWorker? loginWorker = WorkerPool.instance.get('LOGIN_WORKER');
-
-    // This is an interesting bit.
-    dynamic value = await loginWorker?.post('getLargeAValue');
-    final BigInt srpA = BigInt.parse(value as String);
-    // This is the state update.
-    authenticationHelper.largeAValue = srpA;
-
+    final srpA = authenticationHelper.getLargeAValue()!;
     authParameters['SRP_A'] = srpA.toRadixString(16);
 
     if (authenticationFlowType == 'CUSTOM_AUTH') {
