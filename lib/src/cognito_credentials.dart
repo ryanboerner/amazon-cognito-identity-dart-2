@@ -56,7 +56,7 @@ class CognitoCredentials {
       paramsReq['Logins'] = identityId.loginParam;
     }
 
-    dynamic data;
+    var data;
     try {
       data = await _client!.request('GetCredentialsForIdentity', paramsReq,
           service: 'AWSCognitoIdentityService',

@@ -1,10 +1,8 @@
-// ignore_for_file: overridden_fields
 import 'cognito_user_session.dart';
 
 class CognitoUserException implements Exception {
   String? message;
   String? challengeName;
-
   CognitoUserException([this.message]);
 
   @override
@@ -22,7 +20,6 @@ class CognitoUserNewPasswordRequiredException extends CognitoUserException {
   String? message;
   dynamic userAttributes;
   List<dynamic>? requiredAttributes;
-
   CognitoUserNewPasswordRequiredException(
       {this.userAttributes,
       this.requiredAttributes,
@@ -35,7 +32,6 @@ class CognitoUserMfaRequiredException extends CognitoUserException {
   @override
   String? challengeName;
   dynamic challengeParameters;
-
   CognitoUserMfaRequiredException(
       {this.challengeName = 'SMS_MFA', this.challengeParameters, this.message});
 }
@@ -46,7 +42,6 @@ class CognitoUserSelectMfaTypeException extends CognitoUserException {
   @override
   String? challengeName;
   dynamic challengeParameters;
-
   CognitoUserSelectMfaTypeException(
       {this.challengeName = 'SELECT_MFA_TYPE',
       this.challengeParameters,
@@ -59,7 +54,6 @@ class CognitoUserMfaSetupException extends CognitoUserException {
   @override
   String? challengeName;
   dynamic challengeParameters;
-
   CognitoUserMfaSetupException(
       {this.challengeName = 'MFA_SETUP',
       this.challengeParameters,
@@ -72,7 +66,6 @@ class CognitoUserTotpRequiredException extends CognitoUserException {
   @override
   String? challengeName;
   dynamic challengeParameters;
-
   CognitoUserTotpRequiredException(
       {this.challengeName = 'SOFTWARE_TOKEN_MFA',
       this.challengeParameters,
@@ -85,7 +78,6 @@ class CognitoUserCustomChallengeException extends CognitoUserException {
   @override
   String? challengeName;
   dynamic challengeParameters;
-
   CognitoUserCustomChallengeException(
       {this.challengeName = 'CUSTOM_CHALLENGE',
       this.challengeParameters,
@@ -96,29 +88,6 @@ class CognitoUserConfirmationNecessaryException extends CognitoUserException {
   @override
   String? message;
   CognitoUserSession? signInUserSession;
-
   CognitoUserConfirmationNecessaryException(
       {this.signInUserSession, this.message = 'User Confirmation Necessary'});
-}
-
-class CognitoUserDeviceConfirmationNecessaryException
-    extends CognitoUserException {
-  @override
-  String? message;
-  CognitoUserSession? signInUserSession;
-
-  CognitoUserDeviceConfirmationNecessaryException(
-      {this.signInUserSession,
-      this.message = 'User Device Confirmation Necessary'});
-}
-
-class CognitoUserPhoneNumberVerificationNecessaryException
-    extends CognitoUserException {
-  @override
-  String? message;
-  CognitoUserSession? signInUserSession;
-
-  CognitoUserPhoneNumberVerificationNecessaryException(
-      {this.signInUserSession,
-      this.message = 'Verification of Attribute \'phone_number\' Necessary'});
 }

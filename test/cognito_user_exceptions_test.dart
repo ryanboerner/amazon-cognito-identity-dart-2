@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('throw CognitoUserNewPasswordRequiredException generates message', () {
-    t() => throw CognitoUserNewPasswordRequiredException();
+    final t = () => throw CognitoUserNewPasswordRequiredException();
     try {
       t();
     } on CognitoUserNewPasswordRequiredException catch (e) {
@@ -24,7 +24,7 @@ void main() {
     }
   });
   test('throw CognitoUserMfaRequiredException generates message', () {
-    t() => throw CognitoUserMfaRequiredException();
+    final t = () => throw CognitoUserMfaRequiredException();
     try {
       t();
     } on CognitoUserMfaRequiredException catch (e) {
@@ -42,7 +42,7 @@ void main() {
     }
   });
   test('throw CognitoUserSelectMfaTypeException generates message', () {
-    t() => throw CognitoUserSelectMfaTypeException();
+    final t = () => throw CognitoUserSelectMfaTypeException();
     try {
       t();
     } on CognitoUserSelectMfaTypeException catch (e) {
@@ -60,7 +60,7 @@ void main() {
     }
   });
   test('throw CognitoUserMfaSetupException generates message', () {
-    t() => throw CognitoUserMfaSetupException();
+    final t = () => throw CognitoUserMfaSetupException();
     try {
       t();
     } on CognitoUserMfaSetupException catch (e) {
@@ -78,7 +78,7 @@ void main() {
     }
   });
   test('throw CognitoUserTotpRequiredException generates message', () {
-    t() => throw CognitoUserTotpRequiredException();
+    final t = () => throw CognitoUserTotpRequiredException();
     try {
       t();
     } on CognitoUserTotpRequiredException catch (e) {
@@ -99,7 +99,7 @@ void main() {
     }
   });
   test('throw CognitoUserCustomChallengeException generates message', () {
-    t() => throw CognitoUserCustomChallengeException();
+    final t = () => throw CognitoUserCustomChallengeException();
     try {
       t();
     } on CognitoUserCustomChallengeException catch (e) {
@@ -117,7 +117,7 @@ void main() {
     }
   });
   test('throw CognitoUserConfirmationNecessaryException generates message', () {
-    t() => throw CognitoUserConfirmationNecessaryException();
+    final t = () => throw CognitoUserConfirmationNecessaryException();
     try {
       t();
     } on CognitoUserConfirmationNecessaryException catch (e) {
@@ -135,35 +135,6 @@ void main() {
     } catch (e) {
       expect(e.toString(),
           equals('CognitoUserException: User Confirmation Necessary'));
-    }
-  });
-  test(
-      'throw CognitoUserPhoneNumberVerificationNecessaryException generates message',
-      () {
-    t() => throw CognitoUserPhoneNumberVerificationNecessaryException();
-    try {
-      t();
-    } on CognitoUserPhoneNumberVerificationNecessaryException catch (e) {
-      expect(
-          e.toString(),
-          equals(
-              'CognitoUserException: Verification of Attribute \'phone_number\' Necessary'));
-    }
-    try {
-      t();
-    } on CognitoUserException catch (e) {
-      expect(
-          e.toString(),
-          equals(
-              'CognitoUserException: Verification of Attribute \'phone_number\' Necessary'));
-    }
-    try {
-      t();
-    } catch (e) {
-      expect(
-          e.toString(),
-          equals(
-              'CognitoUserException: Verification of Attribute \'phone_number\' Necessary'));
     }
   });
 }
