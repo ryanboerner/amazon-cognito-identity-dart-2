@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 
-const _aws_sha_256 = 'AWS4-HMAC-SHA256';
-const _aws4_request = 'aws4_request';
+const _awsSha256 = 'AWS4-HMAC-SHA256';
+const _aws4request = 'aws4_request';
 const _aws4 = 'AWS4';
-const _x_amz_date = 'x-amz-date';
-const _x_amz_security_token = 'x-amz-security-token';
+const _xAmzDate = 'x-amz-date';
+const _xAmzSecurityToken = 'x-amz-security-token';
 const _host = 'host';
 const _authorization = 'Authorization';
-const _default_content_type = 'application/json';
-const _default_accept_type = 'application/json';
+const _defaultContentType = 'application/json';
+const _defaultAcceptType = 'application/json';
 
 class AwsSigV4Client {
   late String endpoint;
@@ -23,12 +23,13 @@ class AwsSigV4Client {
   String serviceName;
   String defaultContentType;
   String defaultAcceptType;
+
   AwsSigV4Client(this.accessKey, this.secretKey, String endpoint,
       {this.serviceName = 'execute-api',
       this.region = 'us-east-1',
       this.sessionToken,
-      this.defaultContentType = _default_content_type,
-      this.defaultAcceptType = _default_accept_type}) {
+      this.defaultContentType = _defaultContentType,
+      this.defaultAcceptType = _defaultAcceptType}) {
     final parsedUri = Uri.parse(endpoint);
     this.endpoint = '${parsedUri.scheme}://${parsedUri.host}';
     pathComponent = parsedUri.path;
@@ -51,6 +52,7 @@ class SigV4Request {
   String? datetime;
   late List<int> signingKey;
   late String signature;
+
   SigV4Request(
     this.awsSigV4Client, {
     required String method,
@@ -63,13 +65,14 @@ class SigV4Request {
   }) {
     this.method = method.toUpperCase();
     this.path = '${awsSigV4Client.pathComponent}$path';
-    headers = headers ?? {};
+    headers =
+        headers?.map((key, value) => MapEntry(key.toLowerCase(), value)) ?? {};
 
-    if (headers!['Content-Type'] == null && this.method != 'GET') {
-      headers!['Content-Type'] = awsSigV4Client.defaultContentType;
+    if (headers!['content-type'] == null && this.method != 'GET') {
+      headers!['content-type'] = awsSigV4Client.defaultContentType;
     }
-    if (headers!['Accept'] == null) {
-      headers!['Accept'] = awsSigV4Client.defaultAcceptType;
+    if (headers!['accept'] == null) {
+      headers!['accept'] = awsSigV4Client.defaultAcceptType;
     }
     if (body == null || this.method == 'GET') {
       this.body = '';
@@ -77,18 +80,18 @@ class SigV4Request {
       this.body = json.encode(body);
     }
     if (body == '') {
-      headers!.remove('Content-Type');
+      headers!.remove('content-type');
     }
     datetime = datetime ?? SigV4.generateDatetime();
 
-    headers![_x_amz_date] = datetime;
+    headers![_xAmzDate] = datetime;
     final endpointUri = Uri.parse(awsSigV4Client.endpoint);
     headers![_host] = endpointUri.host;
 
     headers![_authorization] =
         authorizationHeader ?? _generateAuthorization(datetime!);
     if (awsSigV4Client.sessionToken != null) {
-      headers![_x_amz_security_token] = awsSigV4Client.sessionToken;
+      headers![_xAmzSecurityToken] = awsSigV4Client.sessionToken;
     }
     headers!.remove(_host);
 
@@ -167,10 +170,10 @@ class SigV4 {
     sortedQueryParams.sort();
 
     final canonicalQueryStrings = [];
-    sortedQueryParams.forEach((key) {
+    for (var key in sortedQueryParams) {
       canonicalQueryStrings.add(
           '$key=${Uri.encodeQueryComponent(queryParams[key]!).replaceAll('+', "%20")}');
-    });
+    }
 
     return canonicalQueryStrings.join('&');
   }
@@ -184,9 +187,9 @@ class SigV4 {
     var canonicalHeaders = '';
     sortedKeys.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
 
-    sortedKeys.forEach((property) {
+    for (var property in sortedKeys) {
       canonicalHeaders += '${property.toLowerCase()}:${headers[property]}\n';
-    });
+    }
 
     return canonicalHeaders;
   }
@@ -201,14 +204,14 @@ class SigV4 {
     return sortedKeys.join(';');
   }
 
-  static String buildStringToSign(
-      String datetime, String? credentialScope, String? hashedCanonicalRequest) {
-    return '$_aws_sha_256\n$datetime\n$credentialScope\n$hashedCanonicalRequest';
+  static String buildStringToSign(String datetime, String? credentialScope,
+      String? hashedCanonicalRequest) {
+    return '$_awsSha256\n$datetime\n$credentialScope\n$hashedCanonicalRequest';
   }
 
   static String buildCredentialScope(
       String datetime, String region, String service) {
-    return '${datetime.substring(0, 8)}/$region/$service/$_aws4_request';
+    return '${datetime.substring(0, 8)}/$region/$service/$_aws4request';
   }
 
   static String buildCanonicalRequest(
@@ -230,15 +233,7 @@ class SigV4 {
 
   static String buildAuthorizationHeader(String accessKey,
       String credentialScope, Map<String, String?> headers, String signature) {
-    return _aws_sha_256 +
-        ' Credential=' +
-        accessKey +
-        '/' +
-        credentialScope +
-        ', SignedHeaders=' +
-        buildCanonicalSignedHeaders(headers) +
-        ', Signature=' +
-        signature;
+    return '$_awsSha256 Credential=$accessKey/$credentialScope, SignedHeaders=${buildCanonicalSignedHeaders(headers)}, Signature=$signature';
   }
 
   static List<int> calculateSigningKey(
@@ -249,7 +244,7 @@ class SigV4 {
                 sign(utf8.encode('$_aws4$secretKey'), datetime.substring(0, 8)),
                 region),
             service),
-        _aws4_request);
+        _aws4request);
   }
 
   static String calculateSignature(List<int> signingKey, String stringToSign) {
